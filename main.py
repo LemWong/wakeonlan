@@ -16,51 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:supor123@127.0.0.1
 db = SQLAlchemy(app)
 
 
-
-class HttpCode(object):
-    ok = 200
-    unautherror = 401
-    paramserror = 400
-    servererror = 500
-
-
-def restful_result(code,message,data):
-    return jsonify({"code":code,"message":message,"data": [] if data == [] else data or {}})
-
-def success(message="",data=None):
-    return restful_result(code=HttpCode.ok,message=message,data=data)
-
-def unauth_error(message="",data=None):
-    return restful_result(code=HttpCode.unautherror,message=message,data=data)
-
-def params_error(message="",data=None):
-    return restful_result(code=HttpCode.paramserror,message=message,data=data)
-
-def server_error(message="",data=None):
-    return restful_result(code=HttpCode.servererror, message=message or '服务器内部错误', data=data)
-
-
-loginPath = "https://login.netease.com/connect/authorize?response_type=code&"
-LOCAL_CONFIG = ("https://login.netease.com/connect/authorize?response_type=code&" \
-            "scope=openid%20fullname%20nickname&client_id=f437060287c011eb9c23246e965dfd84&redirect_uri=http%3A%2F%2F10.246.105.21:5000%2Flogin%2F",
-                "http%3A%2F%2F10.246.105.21:5000%2Flogin%2F",
-                "Basic ZjQzNzA2MDI4N2MwMTFlYjljMjMyNDZlOTY1ZGZkODQ6NDJiNjgwYjI2ZjA1NGEwMjg2YWZmOTA5YWE1OWM0ODNmNDM3MGFjNjg3YzAxMWViOWMyMzI0NmU5NjVkZmQ4NA==")
-
-loginPath, redirect_uri,Authorization = LOCAL_CONFIG
-
-
-def login_required(func):
-    @wraps(func)
-    def wrapper(*args,**kwargs):
-        if session.get('username'):
-            return func(*args, **kwargs)
-        else:
-            return redirect(loginPath, code=302)
-    return wrapper
-
-
 @app.route('/', methods=['GET', 'POST'])
-@login_required
 def index():
     userName = session['username']
     if request.method == 'GET':
@@ -84,29 +40,9 @@ def index():
         except Exception as e:
             return e
 
-
-@app.route("/login/", methods=['GET'])
-def login():
-    if request.method == 'GET':
-        data = request.args
-        user_code = data['code']
-        headers = {'Authorization': Authorization}
-        r = requests.post('https://login.netease.com/connect/token', headers=headers,data={'grant_type': 'authorization_code',
-                                                                           'code': user_code, 'redirect_uri':redirect_uri})
-
-        if r.status_code == 200:
-            resp_token = r.json()
-            access_token = resp_token['access_token']
-            r2 = requests.get('https://login.netease.com/connect/userinfo?access_token='+access_token)
-            userName = r2.json()['nickname']
-            session['username'] = userName
-            return redirect('/')
-        else:
-            return redirect(loginPath)           
-
+         
 
 @app.route("/wakeup/<int:device_id>", methods=['GET'])
-@login_required
 def wakeup(device_id):
     sql = "select * from device where id = '%d'" %device_id
     sql_res = list(db.session.execute(sql))
@@ -120,7 +56,6 @@ def wakeup(device_id):
 
 
 @app.route("/delete/<int:device_id>", methods=['GET'])
-@login_required
 def delete(device_id):
     sql_del = "delete from device where id = '%d'" %device_id
     try:
@@ -132,15 +67,6 @@ def delete(device_id):
     except Exception as e:
         return e
 
-
-    
-@app.route('/logout/', methods=['GET'])
-def logout():
-    if session.get('username'):
-        session.pop('username')
-        return redirect(loginPath)
-    else:
-        return redirect(loginPath)
 
 if __name__ == "__main__":
     app.secret_key = "24jdshfksKSD231EWERJL34JLWglv"

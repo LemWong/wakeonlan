@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>远程网络唤醒</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<div class="row">
+  <div class="col-md-3"></div>
+    <div class="col-md-6" >
+      <form method="post">
+        IP地址 <input type="text" name="ip_address" autocomplete="off" required>
+          Mac地址 <input  type="text" name="mac_address" autocomplete="off" required>
+        <input class="btn btn-primary btn-sm" type="submit" name="submit" value="新增">
+      </form>
+      <br>
+      <h4 style="text-align:left">当前您已录入的设备信息如下:</h4>
+      <table class="table table-bordered table-hover">
+        <thead>
+          <th>设备IP</th>
+          <th>设备MAC</th>
+          <th>操作</th>
+        </thead>
+        <tbody>
+          {% for device in devices %}
+          <tr>
+            <td>{{ device[1] }}</td>
+            <td>{{ device[2] }}</td>
+            <td><a class="btn btn-success btn-sm" href="{{ url_for('wakeup', device_id=device[0]) }}">唤醒</a>
+            <a class="btn btn-danger btn-sm" href="{{ url_for('delete', device_id=device[0]) }}">删除</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <br>
+      <br>
+    <footer>
+        <small>Copyright &copy; <a href="http://10.246.105.21:5000/">远程唤醒小助手</a></small>
+    </footer>
+</div>
+<div class="col-md-3">
+<a type="button" class="btn btn-info btn-sm" href="{{ url_for('logout')}}">注销</a>
+</div>
+</div>
+</body>
+</html>
+
